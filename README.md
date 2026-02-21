@@ -2,7 +2,7 @@
 
 ### Project Scope
 
-A database for analysis of streamed content sourced from a Netflix database. Includes analyzing shows/movies, their genres, country, ratings, dates, summary, with materialized views for genre popularity, country-based partitions, and stored procedures for content ranking.
+A database for analysis of streamed content sourced from a Netflix database. Includes analyzing shows/movies, their genres, country, ratings, dates, summary, with materialized views for genre popularity, country-based partitions, and stored procedures for content ranking. Done with Oracle SQL.
 
 ### Users
 
