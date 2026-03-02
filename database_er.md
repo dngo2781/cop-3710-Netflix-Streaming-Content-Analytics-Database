@@ -1,5 +1,6 @@
-#### ER Diagram
-<img width="989" height="410" alt="Screenshot 2026-02-20 193440" src="https://github.com/user-attachments/assets/0da264bc-f84d-4837-b6b8-41fc89d92d98" />
+#### ER Diagram (BCNF)
+<img width="1273" height="582" alt="image" src="https://github.com/user-attachments/assets/0ca68bd4-a1c9-4bdc-9556-833121e07f92" />
+
 
 #### User Groups
 1. Data Analyst
