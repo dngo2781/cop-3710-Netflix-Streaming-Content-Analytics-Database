@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>preprocess</title>
+    </head>
+    <body>
+    
+<input type="file" id="csvFile" accept=".csv">
+
+<script type>
+(function(){
+
+function parseCSV(text){
+  let rows=[]
+  let row=[]
+  let field=''
+
+  let i=0
+  let inQuotes=false
+
+    while(i<text.length){
+        let char=text[i]
+
+        if(inQuotes){
+            if(char==='"'){
+                if(text[i+1]==='"'){
+                    field+='"'
+                    i+=2
+                    continue
+                }
+                inQuotes=false
+            }else{
+                field+=char
+            }
+        }else{
+            if(char==='"'){
+                inQuotes=true
+            }else if(char===','){
+                row.push(field)
+                field=''
+            }else if(char==='\n'){
+                row.push(field)
+                rows.push(row)
+                row=[]
+                field=''
+            } else if(char==='\r'){
+            }else{
+                field+=char
+            }
+        }
+
+        i++
+    }
+    if(field.length>0||row.length>0){
+        row.push(field)
+        rows.push(row)
+    }
+
+    return rows
+}
+
+let input=document.getElementById('csvFile')
+input.addEventListener('change',function(){
+  let reader=new FileReader()
+  reader.onload=function(){
+    let text=reader.result
+    
+    text=text.split('\n').slice(1).join('\n')
+    
+    let data=parseCSV(text).slice(0,4000).map(row=>row.map(x=>{
+        if(x[x.length-1]===',')return x.slice(0,-1)
+        return x
+    }))
+    
+    //0 show_id,1 type,2 title,3 director,4 cast,5 country,6 date_added,7 release_year,8 rating,9 duration,10 listed_in,11 description
+    
+    let CONTENT=data.map(x=>[x[0],x[1],x[2],x[8]])
+    let CONTENT_DATES=data.map(x=>[x[0],x[7],x[6]])
+    
+    let SEASON=[]
+    data.forEach(x=>{
+        let numSeasons=x[9].split(' ')
+        
+        numSeasons=numSeasons[1]==='min'?1:(numSeasons[0]-0)
+        for(let i=0;i<numSeasons;i++)
+            SEASON.push([x[0]+'',(i+1)+''])
+    })
+    
+    let CONTENT_GENRE=[],GENRE=new Set()
+    data.forEach(x=>{
+        let genres=x[10].split(', ')
+        
+        for(let i=0,l=genres.length;i<l;i++){
+            if(genres[i]==='')continue
+            CONTENT_GENRE.push([x[0],genres[i]])
+            GENRE.add(genres[i])
+        }
+    })
+    GENRE=Array.from(GENRE).map(x=>[x])
+    
+    let CONTENT_COUNTRY=[],COUNTRY=new Set()
+    data.forEach(x=>{
+        let countries=x[5].split(', ')
+        
+        for(let i=0,l=countries.length;i<l;i++){
+            if(countries[i]==='')continue
+            CONTENT_COUNTRY.push([x[0],countries[i]])
+            COUNTRY.add(countries[i])
+        }
+    })
+    COUNTRY=Array.from(COUNTRY).map(x=>[x])
+    
+    let CONTENT_PERSON=new Set(),PERSON=new Set()
+    data.forEach(x=>{
+        let cast=x[4].split(', ')
+        
+        for(let i=0,l=Math.min(cast.length,4);i<l;i++){
+            if(cast[i]==='')continue
+            CONTENT_PERSON.add(x[0]+"#"+cast[i]+"#"+'Actor')
+            PERSON.add(cast[i])
+        }
+        
+        let direc=x[3].split(', ')
+        
+        for(let i=0,l=direc.length;i<l;i++){
+            if(direc[i]==='')continue
+            CONTENT_PERSON.add(x[0]+"#"+direc[i]+"#"+'Director')
+            PERSON.add(direc[i])
+        }
+    })
+    PERSON=Array.from(PERSON).map(x=>[x])
+    CONTENT_PERSON=Array.from(CONTENT_PERSON).map(x=>x.split('#'))
+
+    for(let i=0;i<70;i++)
+        GENRE.push(['Fabricated Genre '+(i+1)])
+    for(let i=0;i<40;i++)
+        COUNTRY.push(['Fabricated Country '+(i+1)])
+    
+    function toCSV(headers,data){
+        let rows=data.map(row=>
+            row.map(field=>`"${(field||'').replace(/"/g,'""')}"`).join(',')
+        )
+        return [headers.join(','),...rows].join('\n')
+    }
+    function downloadCSV(fileName, content) {
+        
+        let blob=new Blob([content],{type:'text/csv;charset=utf-8;'})
+        let url=URL.createObjectURL(blob)
+
+        let link=document.createElement("a")
+        link.setAttribute('href',url)
+        link.setAttribute('download', fileName)
+        link.style.visibility='hidden'
+
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+    }
+
+    downloadCSV(
+    'content.csv',
+    toCSV(['show_id','type','title','rating'],CONTENT)
+    )
+    downloadCSV(
+    'content_dates.csv',
+    toCSV(['show_id','release_year','date_added'],CONTENT_DATES)
+    )
+    downloadCSV(
+    'season.csv',
+    toCSV(['show_id','season_number'],SEASON)
+    )
+
+    downloadCSV(
+    'content_genre.csv',
+    toCSV(['show_id','genre_name'],CONTENT_GENRE)
+    )
+    downloadCSV(
+    'genre.csv',
+    toCSV(['genre_name'],GENRE)
+    )
+
+    downloadCSV(
+    'content_country.csv',
+    toCSV(['show_id','country_name'],CONTENT_COUNTRY)
+    )
+    downloadCSV(
+    'country.csv',
+    toCSV(['country_name'],COUNTRY)
+    )
+
+    downloadCSV(
+    'content_person.csv',
+    toCSV(['show_id','person_name','role_type'],CONTENT_PERSON)
+    )
+    downloadCSV(
+    'person.csv',
+    toCSV(['person_name'],PERSON)
+    )
+
+}
+reader.readAsText(input.files[0])
+})
+
+
+})()
+
+</script>
+
+
+
+    </body>
+</html>
