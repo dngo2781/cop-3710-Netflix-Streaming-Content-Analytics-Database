@@ -11,3 +11,15 @@ Data analysts, researchers, students, and those interested in looking at streame
 ### Data Source
 https://www.kaggle.com/datasets/shivamb/netflix-shows?resource=download
 <br>Attributes: show_id, type, title, director, cast, country, date_added, release_year, rating, duration, listed_in, description
+
+<img width="1273" height="582" alt="image" src="https://github.com/user-attachments/assets/115cd45e-7fca-4f25-90df-d6ceccb5172e" />
+
+
+### How to Use
+
+1. Set up an empty Oracle SQL database.
+2. Create the database tables using the create_db.sql.
+3. Run dataload.py (after entering the database connection credentials) to insert the data into the database.
+4. Install streamlit (`python -m pip install streamlit`) if not already installed.
+5. Run app.py (after entering the database connection credentials) using streamlit (`python -m streamlit run app.py`) to search the database.
+<img width="1905" height="835" alt="image" src="https://github.com/user-attachments/assets/810ceaed-af6c-4d9f-8a85-4533ea4c6500" />
